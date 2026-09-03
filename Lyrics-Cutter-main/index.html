@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HCJ Audio Cutter</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="HCJ Cutter" />
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>HCJ <span>Audio Cutter</span></h1>
+  <span class="badge">PWA</span>
+</header>
+
+<div class="app">
+
+  <!-- ─── LEFT PANEL ─── -->
+  <div class="left-panel">
+
+    <!-- Drop Zone -->
+    <div class="drop-zone" id="drop-zone">
+      <div class="icon">🎬🎵</div>
+      <p><strong>Drop a video or audio file here</strong><br>or click to browse</p>
+      <p style="margin-top:8px;font-size:.75rem;">MP4, MKV, MOV, AVI, WebM, MP3, WAV, M4A, AAC, OGG, FLAC — up to 2 GB</p>
+      <input type="file" id="file-input" accept="video/*,audio/*,.mp4,.mkv,.mov,.avi,.webm,.m4v,.3gp,.ts,.mp3,.m4a,.wav,.aac,.ogg,.flac,.wma" />
+    </div>
+
+    <!-- Import already-cut clips (one file per verse) -->
+    <div class="drop-zone" id="import-zone" style="margin-top:14px;">
+      <div class="icon">📥</div>
+      <p><strong>Or import already-cut clips</strong><br>one file per verse — pick/drop several at once</p>
+      <p style="margin-top:8px;font-size:.75rem;">Sorted by filename, then numbered in order</p>
+      <input type="file" id="import-input" accept="video/*,audio/*,.mp4,.mkv,.mov,.avi,.webm,.m4v,.3gp,.ts,.mp3,.m4a,.wav,.aac,.ogg,.flac,.wma" multiple />
+    </div>
+
+    <!-- File name prefix -->
+    <div style="margin-top:14px;display:flex;align-items:center;gap:8px;">
+      <label for="prefix-input" style="font-size:.78rem;color:var(--text-muted);">File prefix</label>
+      <input type="text" id="prefix-input" value="hcj" style="flex:1;min-width:0;padding:6px 8px;border-radius:6px;border:1px solid var(--border,#3a3a3a);background:var(--bg-2,#1a1a1a);color:var(--text,#eee);font-size:.85rem;" />
+    </div>
+
+    <!-- Media Player (hidden until file loaded) — video element for video files,
+         audio element (with a waveform-style icon backdrop) for audio-only files -->
+    <div class="video-wrapper" id="video-wrapper" style="display:none">
+      <video id="video" controls preload="metadata"></video>
+      <div class="audio-player-shell" id="audio-player-shell" style="display:none">
+        <div class="audio-icon">🎵</div>
+        <audio id="audio-player" controls preload="metadata"></audio>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-section" id="timeline-section" style="display:none">
+      <h3>Timeline — press <kbd>Space</kbd> to mark</h3>
+      <div class="timeline-bar" id="timeline-bar">
+        <div class="timeline-progress" id="timeline-progress"></div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="btn btn-accent" id="btn-mark">✦ Mark</button>
+        <button class="btn btn-outline btn-sm" id="btn-play">▶ Play</button>
+        <button class="btn btn-warn btn-sm" id="btn-undo" disabled>↩ Undo Mark</button>
+        <button class="btn btn-outline btn-sm" id="btn-clear-marks">✕ Clear Marks</button>
+        <span class="time-display" id="time-display">0:00.0 / 0:00</span>
+      </div>
+
+      <!-- Marks -->
+      <div style="margin-top:10px">
+        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:6px;">
+          Marks (click to seek · × to delete)
+        </div>
+        <div class="marks-list" id="marks-list">
+          <span style="font-size:.78rem;color:var(--text-muted);font-style:italic;">No marks yet — play the video and click Mark</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── RIGHT PANEL ─── -->
+  <div class="right-panel">
+    <div class="right-panel-header">
+      <h2>🎵 Clips</h2>
+      <div class="right-panel-actions">
+        <button class="btn btn-accent btn-sm" id="btn-process" disabled>⚙ Extract MP3</button>
+        <button class="btn btn-outline btn-sm" id="btn-download-all" disabled>⬇ Download</button>
+        <button class="btn btn-outline btn-sm" id="btn-select-all">☑ All</button>
+      </div>
+    </div>
+
+    <div class="clips-list" id="clips-list">
+      <div class="empty-state">
+        <div class="icon">✂️</div>
+        <div>Load a video and add marks<br>to create clips</div>
+      </div>
+    </div>
+
+    <div class="status-bar" id="status-bar">
+      <span id="status-text">Ready</span>
+      <div class="progress-bar-wrap" id="progress-wrap">
+        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Loading overlay -->
+<div class="ffmpeg-loading" id="proc-loading">
+  <div class="spinner"></div>
+  <div id="proc-load-text">Processing audio…</div>
+</div>
+
+<!-- /* native-ffmpeg-patch */ --><script src="native-bridge.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

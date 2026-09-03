@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Lyrics Cutter</string>
+    <string name="title_activity_main">Lyrics Cutter</string>
+    <string name="package_name">com.lyricscutter.app</string>
+    <string name="custom_url_scheme">com.lyricscutter.app</string>
+</resources>
